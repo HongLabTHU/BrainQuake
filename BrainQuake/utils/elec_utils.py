@@ -23,7 +23,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 # from mpl_toolkits.mplot3d import Axes3D, art3d
 # import electrode
 
-CMD_Hough3D = '/Users/fangcai/hough-3d-lines/hough3dlines'
+CMD_Hough3D = './hough-3d-lines/hough3dlines'
 
 def run(cmd):
     """
