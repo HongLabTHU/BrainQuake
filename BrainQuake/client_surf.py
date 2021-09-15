@@ -23,8 +23,10 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
 from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QGraphicsScene
 
-from form import Ui_reconSurfer
-import utils_cs
+# from form import Ui_reconSurfer
+# import utils_cs
+from utils import surfer_utils
+from gui_forms.surfer_form import Ui_reconSurfer
 
 HEADERSIZE = 10
 SEPARATOR = '<SEPARATOR>'
@@ -42,12 +44,12 @@ class Uploader(QThread):
     
     def run(self):
         ## sending task_type 'Upload': '1x', '10' for recon-all & '11' for fast-surfer
-        self.s1 = utils_cs.create_socket(host, port)
+        self.s1 = surfer_utils.create_socket(host, port)
         time.sleep(1)
         self.task_type = '1'
         self.task_type_all = self.task_type + self.reconType
-        # utils_cs.text_send(self.s1, self.task_type)
-        utils_cs.text_send(self.s1, self.task_type_all)
+        # surfer_utils.text_send(self.s1, self.task_type)
+        surfer_utils.text_send(self.s1, self.task_type_all)
         self.filesize = os.path.getsize(self.patientFilepath)
         
         ## sending a T1 file
@@ -70,8 +72,8 @@ class Uploader(QThread):
         self.s1.close()
         ## receive a msg
         time.sleep(3)
-        self.s2 = utils_cs.create_socket(host, 6666)
-        log_read = utils_cs.text_recv(self.s2)
+        self.s2 = surfer_utils.create_socket(host, 6666)
+        log_read = surfer_utils.text_recv(self.s2)
         self.log.emit(log_read)
         self.s2.close()
 
@@ -83,15 +85,15 @@ class Checker(QThread):
 
     def run(self):
         ## sending task_type 'Check': '2'
-        self.s1 = utils_cs.create_socket(host, port)
+        self.s1 = surfer_utils.create_socket(host, port)
         time.sleep(1)
         self.task_type = '2'
-        utils_cs.text_send(self.s1, self.task_type)
+        surfer_utils.text_send(self.s1, self.task_type)
         self.s1.close()
 
         ## send a request to check
         time.sleep(1)
-        self.s2 = utils_cs.create_socket(host, 6665)
+        self.s2 = surfer_utils.create_socket(host, 6665)
         time.sleep(1)
         if self.name == '<name>':
             self.name = 'None'
@@ -102,8 +104,8 @@ class Checker(QThread):
         self.info = 'None'
         self.check_log = ' '.join([self.number, self.name, self.hospital, self.state, self.info])
         # print(self.check_log)
-        utils_cs.text_send(self.s2, self.check_log)
-        logs = utils_cs.text_recv(self.s2)
+        surfer_utils.text_send(self.s2, self.check_log)
+        logs = surfer_utils.text_recv(self.s2)
         # print(logs)
         self.logs.emit(logs)
         self.s2.close()
@@ -116,17 +118,17 @@ class Downloader(QThread):
 
     def run(self):
         ## sending task_type 'Download': '3'
-        self.s1 = utils_cs.create_socket(host, port)
+        self.s1 = surfer_utils.create_socket(host, port)
         time.sleep(1)
         self.task_type = '3'
-        utils_cs.text_send(self.s1, self.task_type)
+        surfer_utils.text_send(self.s1, self.task_type)
         self.s1.close()
         
         ## receiving a recon zip file
         time.sleep(1)
-        self.s2 = utils_cs.create_socket(host, 6664)
+        self.s2 = surfer_utils.create_socket(host, 6664)
         time.sleep(1)
-        utils_cs.text_send(self.s2, self.downloadlist)
+        surfer_utils.text_send(self.s2, self.downloadlist)
         time.sleep(1)
         received = self.s2.recv(BUFFER_SIZE).decode()
         filename, filesize = received.split(SEPARATOR)
@@ -150,7 +152,7 @@ class Downloader(QThread):
                 ## write to the file the bytes we just received
                 f.write(bytes_read)
                 self.downloadValue.emit(f"{i}%")
-        # utils_cs.file_recv(self.s2)
+        # surfer_utils.file_recv(self.s2)
         # print('recvd!')
         info = 'Done!'
         self.downloadValue.emit(info) 
