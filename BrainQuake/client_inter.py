@@ -24,8 +24,8 @@ from scipy.signal import iirnotch
 import mne
 import os
 
-from HI_apis import HI_preprocess_file,HI_count_highEvents_chns
-
+# from HI_apis import HI_preprocess_file,HI_count_highEvents_chns
+from utils.HI_apis import HI_preprocess_file,HI_count_highEvents_chns
 
 
 # classes
