@@ -2,7 +2,8 @@ import mne
 import numpy as np
 import os
 import gc
-from HI_utils import *
+# from HI_utils import *
+from .interictal_utils import *
 
 segment_time=50
 
