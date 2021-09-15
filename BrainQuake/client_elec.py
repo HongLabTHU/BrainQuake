@@ -19,9 +19,11 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, Qt
 from PyQt5.QtWidgets import QFileDialog, QGraphicsScene, QListWidget, QSizePolicy, QTableWidgetItem
 
-from Ui_form import Electrodes_gui
-import utils # mayaviplot
-from utils import Preprocess_thread, GenerateLabel_thread, PreprocessResult_thread, ContactSegment_thread
+# from Ui_form import Electrodes_gui
+# import utils1 # mayaviplot
+# from utils1 import Preprocess_thread, GenerateLabel_thread, PreprocessResult_thread, ContactSegment_thread
+from gui_forms.elec_form import Electrodes_gui
+from utils.elec_utils import Preprocess_thread, GenerateLabel_thread, PreprocessResult_thread, ContactSegment_thread, savenpy, lookupTable
 
 SUBDIR = './SurfDataset'
 
@@ -337,7 +339,8 @@ class Electrodes(QtWidgets.QWidget, Electrodes_gui):
 
     def viewContacts(self):
 
-        utils.savenpy(filePath=self.directory_ct, patientName=self.patient)
+        # utils.savenpy(filePath=self.directory_ct, patientName=self.patient)
+        savenpy(filePath=self.directory_ct, patientName=self.patient)
         
         ## set tableWidget
         dir = f"{self.directory_ct}/{self.patient}_result"
@@ -361,7 +364,8 @@ class Electrodes(QtWidgets.QWidget, Electrodes_gui):
             self.tableWidget.setItem(row, 0, QTableWidgetItem(item))
             number = str(self.elec_number_dict[item])
             self.tableWidget.setItem(row, 1, QTableWidgetItem(number))
-            labels_name = utils.lookupTable(subdir=SUBDIR, patient=self.patient, ctdir=self.directory_ct, elec_label=item)
+            # labels_name = utils.elec_utils.lookupTable(subdir=SUBDIR, patient=self.patient, ctdir=self.directory_ct, elec_label=item)
+            labels_name = lookupTable(subdir=SUBDIR, patient=self.patient, ctdir=self.directory_ct, elec_label=item)
             self.tableWidget.setItem(row, 2, QTableWidgetItem(labels_name[0]))
             self.elec_label_dict[item] = labels_name
         print(self.elec_label_dict)
