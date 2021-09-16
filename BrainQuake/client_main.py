@@ -34,7 +34,7 @@ class quakeMain(QWidget):
         self.button_font.setPointSize(18)
 
         self.mainLabel=QLabel(self)
-        self.mainLabel.setPixmap(QPixmap('./round_icon_min.png'))
+        self.mainLabel.setPixmap(QPixmap('../docs/round_icon_min.png'))
         self.mainLabel.setAlignment(Qt.AlignCenter)
         self.gridlayout.addWidget(self.mainLabel,1,2,1,1)
 
