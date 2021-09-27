@@ -33,7 +33,7 @@ SEPARATOR = '<SEPARATOR>'
 BUFFER_SIZE = 4096
 host = '166.111.152.123'
 port = 6669
-Filepath = '.'
+Filepath = os.getcwd()
 
 class Uploader(QThread):
     progressBarValue = pyqtSignal(int)
@@ -133,11 +133,13 @@ class Downloader(QThread):
         received = self.s2.recv(BUFFER_SIZE).decode()
         filename, filesize = received.split(SEPARATOR)
         filename = os.path.basename(filename) ## remove absolute path if there is
-        filepath = os.path.join(Filepath, 'data', 'down', filename)
+        filepath = os.path.join(Filepath, 'download')
+        if not os.path.isdir(filepath):
+            os.mkdir(filepath)
         filesize = int(filesize) ## convert to integer
         time.sleep(1)
         ## start receiving the file from the socket and writing to the file stream
-        with open(filepath, "wb") as f:
+        with open(os.path.join(filepath, filename), "wb") as f:
             j = 0
             while True:
                 ## read bytes from the socket (receive)
