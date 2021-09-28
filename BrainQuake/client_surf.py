@@ -6,6 +6,7 @@ import socket
 import time
 import pickle
 import os
+import shutil
 import mayavi
 from mayavi import mlab
 import nibabel as nib
@@ -206,18 +207,40 @@ class reconSurferUi(QtWidgets.QWidget, Ui_reconSurfer):
     def browseT1File(self):
         self.directory = QFileDialog.getOpenFileName(self, \
              "getOpenFileName", "", "All Files (*);;Nifti Files (*.nii.gz)")
-        self.Filepath = self.directory[0]
-        self.Filename = self.directory[0].split('/')[-1]
-        self.Patname = self.directory[0].split('/')[-1].split('.')[0]
-        self.textBrowser.setText(self.Filepath)
-        self.textBrowser_2.setText(self.Filename)
+        self.Filepath_t1 = self.directory[0]
+        self.Filename_t1 = self.directory[0].split('/')[-1]
+        self.Patname = self.directory[0].split('/')[-1].split('T')[0]
+        self.textBrowser.setText(self.Filepath_t1)
+        self.textBrowser_2.setText(self.Patname)
         self.progressBar.setValue(0)
+
+        
+
+    def browseCTFile(self):
+        self.directory = QFileDialog.getOpenFileName(self, \
+             "getOpenFileName", "", "All Files (*);;Nifti Files (*.nii.gz)")
+        self.Filepath_ct = self.directory[0]
+        self.Filename_ct = self.directory[0].split('/')[-1]
+        self.Patname_ct = self.directory[0].split('/')[-1].split('.')[0]
+        self.textBrowser_1.setText(self.Filepath_ct)
+        
 
     def uploadT1File(self):
         self.reconType = self.comboBox.currentIndex()
+        self.Filepath = os.path.join(Filepath, "upload")
+        if not os.path.isdir(self.Filepath):
+            os.mkdir(self.Filepath)
+        if not os.path.isdir(os.path.join(self.Filepath, self.Patname)):
+            os.mkdir(os.path.join(self.Filepath, self.Patname))
+        shutil.copyfile(self.Filepath_t1, os.path.join(self.Filepath, self.Patname, self.Filename_t1))
+        if self.Filename_ct:
+            shutil.copyfile(self.Filepath_ct, os.path.join(self.Filepath, self.Patname, self.Filename_ct))
+        self.zipFilepath = os.path.join(self.Filepath , self.Patname)
+        self.zipFilename = shutil.make_archive(self.zipFilepath, "zip", self.zipFilepath)
+
         self.thread_1.patientName = self.Patname 
-        self.thread_1.fileName = self.Filename
-        self.thread_1.patientFilepath = self.Filepath 
+        self.thread_1.fileName = f"{self.Patname}.zip"
+        self.thread_1.patientFilepath = self.zipFilename
         self.thread_1.reconType = str(self.reconType)
         self.thread_1.start()
 
