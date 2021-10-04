@@ -201,7 +201,7 @@ class PreprocessResult_thread(QThread):
 
     def run(self):
         intra_file = self.CTintra_file
-        xs, ys, zs = dataExtraction(intraFile=intra_file, thre=0)
+        xs, ys, zs = dataExtraction(intraFile=intra_file, thre=self.thre)
         pointsArray = np.transpose(np.vstack((xs, ys, zs)))
         self.send_axes.emit(pointsArray)
 
