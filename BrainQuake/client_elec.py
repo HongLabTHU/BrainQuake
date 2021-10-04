@@ -6,7 +6,8 @@ import os
 import re
 import nibabel as nib
 import numpy as np
-
+import mayavi
+from mayavi import mlab
 import matplotlib
 matplotlib.use("Qt5Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -387,9 +388,77 @@ class Electrodes(QtWidgets.QWidget, Electrodes_gui):
             self.axes.text(130-self.elec_dict[item][0,0], 130-self.elec_dict[item][0,2], 130+self.elec_dict[item][0,1], f"{item}", c='black')
         # self.scene.addWidget(FigureCanvas(self.fig))
         self.graphicsView.show()
+        
+        self.pushButton_10.setEnabled(True)
 
     def allSet(self):
-        pass
+        
+        self.vis3D(filePath=os.getcwd(), patName=self.patient)
+
+    def vis3D(self, filePath, patName):
+        elecs_xyzDict=np.load(f"{filePath}/dataset/{patName}_data/fslresults/chnXyzDict.npy",allow_pickle=True)[()]
+        brain_data=nib.load(f"{self.directory_surf}/mri/orig.mgz")
+        aff_matrix=brain_data.header.get_affine()
+        print(aff_matrix)
+        verl,facel=nib.freesurfer.read_geometry(f"{self.directory_surf}/surf/lh.pial")
+        verr,facer=nib.freesurfer.read_geometry(f"{self.directory_surf}/surf/rh.pial")
+        
+        all_ver=np.concatenate([verl,verr],axis=0)
+        tmp_facer=facer+verl.shape[0]
+        all_face=np.concatenate([facel,tmp_facer],axis=0)
+        vol_center_tmp=np.dot(aff_matrix,np.array([128,128,128,1])[:,None])
+        vol_center = vol_center_tmp[:3]
+        # print('vol_center_tmp\n', vol_center_tmp)
+        # print(vol_center)
+        # vol_center=np.dot(aff_matrix,np.array([0,0,0,1])[:,None])[:3]
+        reCenter_xyzDict={}
+        for ch,xyz in elecs_xyzDict.items():
+            # tmp_xyz=np.dot(aff_matrix,np.concatenate([xyz,np.ones((xyz.shape[0],1))],axis=1).T)[:3].T
+            # reCenter_xyzDict[ch]=(xyz - vol_center.T) # [:-2, :] # remove the 2 outermost contacts
+            reCenter_xyzDict[ch]=xyz
+        # # for songzishuo
+        # reCenter_xyzDict["E'"]=reCenter_xyzDict["E'"][:-2, :]
+        # reCenter_xyzDict["F'"]=reCenter_xyzDict["F'"][:-1, :]
+        print('------')
+        for k, v in reCenter_xyzDict.items():
+            print(k, v.shape)
+        
+        opacity=0.4
+        ambient=0.4225
+        specular = 0.3
+        specular_power = 20
+        diffuse = 0.5
+        interpolation='phong'
+        mlab.figure(bgcolor=(0.8,0.8,0.8),size=(1500,1500))
+        figure=mlab.gcf()
+        mesh=mlab.triangular_mesh(all_ver[:,0],all_ver[:,1],all_ver[:,2],all_face,color=(1.,1.,1.),representation='surface',opacity=opacity,line_width=1.)
+        # change OpenGL mesh properties for phong point light shading
+        mesh.actor.property.ambient = ambient
+        mesh.actor.property.specular = specular
+        mesh.actor.property.specular_power = specular_power
+        mesh.actor.property.diffuse = diffuse
+        mesh.actor.property.interpolation = interpolation
+        mesh.actor.property.backface_culling = True
+        # mesh.scene.light_manager.light_mode = 'vtk'
+        if opacity <= 1.0:
+            mesh.scene.renderer.trait_set(use_depth_peeling=True)  # , maximum_number_of_peels=100, occlusion_ratio=0.4)
+        # Make the mesh look smoother
+        for child in mlab.get_engine().scenes[0].children:
+            poly_data_normals = child.children[0]
+            poly_data_normals.filter.feature_angle = 80.0
+        # colormap = ['Greens','Blues','black-white','Purples','blue-red','Greys','pink','summer','winter','jet']
+        # colormap = [(1,0,0), (0,1,0), (0,0,1), (1,1,0), (1,0,1), (0,1,1)][:n_clus]
+        # colormap.append((1/255, 1/255, 1/255)) # discarded
+        # i=1
+        for chnn,xyz in reCenter_xyzDict.items():
+            for j in range(xyz.shape[0]):
+                mlab.points3d(xyz[j,0], xyz[j,1], xyz[j,2], color=(0,0,0), scale_factor=1.5)
+            #mlab.points3d(xyz[:,0], xyz[:,1], xyz[:,2], colormap=colormap[i], scale_factor=2)
+            mlab.text3d(xyz[-1,0]+4,xyz[-1,1]+4,xyz[-1,2]+4,chnn,orient_to_camera=True,color=(0,0,1),line_width=10,scale=2)
+            # print(chnn)
+            # i = i+1
+        # mlab.title("$%s, n_{clus}=%s, n_{discard}=%s$" % (mpn(patientName), n_clus, n_bad), size=0.5)
+        mlab.draw()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
