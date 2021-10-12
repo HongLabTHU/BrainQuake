@@ -32,13 +32,22 @@ The **BrainQuake** software:
 
 ## Installation Guide
 
-**BrainQuake** server package relies on [FSL](http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FslInstallation) and [Freesurfer](https://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall). You should install them through the instructions on their website. Server codes are not mandatory to be installed. BrainQuake group provides a public server to do the reconstruction and registration works for users. The client package and its Python dependencies can be installed and run with the following：(tbc.)
+**BrainQuake** server package relies on [FSL](http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FslInstallation) and [Freesurfer](https://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall). You should install them through the instructions on their website. Server codes are not mandatory to be installed. BrainQuake group provides a public server to do the reconstruction and registration works for users. The client package and its Python dependencies can be installed and run with the following：
 
     git clone https://github.com/HongLabTHU/BrainQuake.git
     cd BrainQuake
     pip install -r requirements.txt
-    pip install .
+    python client_main.py
+
+We recommend a one-stop installation option that you use anaconda to create a virtual environment for all those packages and dependencies. After installing [anaconda](https://www.anaconda.com/products/individual#Downloads), run the following:
+
+    conda create -n bq_env -c conda-forge python=3.7 numpy scipy matplotlib nb_conda vtk netcdf4 mayavi mne nibabel PyQt5 scikit-learn
     
+With this conda venv 'bq_env' created, BrainQuake main window can pop up by running:
+
+    conda activate bq_env
+    cd <directory>/BrainQuake
+    python client_main.py
 
 ## Tutorial
 
