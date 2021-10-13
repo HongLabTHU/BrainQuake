@@ -1,0 +1,6 @@
+#0001 sub1 Yuquan fast-surfer finished 1
+#0002 sub2 Yuquan fast-surfer finished 1
+#0003 sub3 Yuquan recon-all finished 1
+#0004 example Yuquan fast-surfer finished 1
+#0005 sub4 Yuquan fast-surfer wait 0
+#0006 example1 Yuquan recon-all wait 0
