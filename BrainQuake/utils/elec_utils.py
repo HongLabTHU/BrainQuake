@@ -385,6 +385,9 @@ class ElectrodeSeg:
         self.spacing = spacing
         self.gap = gap
 
+        self.affine = nib.load(self.rawDataPath).affine
+        self.inv_vox2ras_tkr = np.array([[-1, 0, 0, 128], [0, 0, -1, 128], [0, 1, 0, 128], [0, 0, 0, 1]], dtype=np.float32)
+
         # some calculations to get the rest initials
         self.labelValues = np.unique(self.labels)
         self.numElecs = len(self.labelValues) - 1
@@ -453,14 +456,31 @@ class ElectrodeSeg:
         self.elecFilepath = os.path.join(self.filePath, f"{self.patientName}_result")
         if not os.path.exists(self.elecFilepath):
             os.mkdir(self.elecFilepath)
-        else:
-            self.elecFile = os.path.join(self.elecFilepath, f"{self.nameLabel}.txt")
-            with open(self.elecFile, "ab") as f:
-                f.seek(0)
-                f.truncate()
-                # f.write(b"\n")
-                np.savetxt(f, self.elecPos_true, fmt='%10.8f', delimiter=' ', newline='\n', header=f"{self.elecPos_true.shape[0]}")
+        
+        self.elecFile = os.path.join(self.elecFilepath, f"{self.nameLabel}.txt")
+        with open(self.elecFile, "ab") as f:
+            f.seek(0)
+            f.truncate()
+            # f.write(b"\n")
+            np.savetxt(f, self.elecPos_true, fmt='%10.8f', delimiter=' ', newline='\n', header=f"{self.elecPos_true.shape[0]}")
+        
+        # calculate freeview-version results
+        tmp = np.matmul(self.affine, self.inv_vox2ras_tkr)
+        tmp1 = np.matmul(tmp, np.transpose(np.column_stack((self.elecPos_true, np.ones((self.elecPos_true.shape[0], ))))))
+        self.elecPos_freeview = np.transpose(tmp1)[:, 0:3]
 
+        self.elecFilepath_freeview = os.path.join(self.filePath, f"{self.patientName}_freeview_result")
+        if not os.path.exists(self.elecFilepath_freeview):
+            os.mkdir(self.elecFilepath_freeview)
+        
+        self.elecFile_freeview = os.path.join(self.elecFilepath_freeview, f"{self.nameLabel}.txt")
+        with open(self.elecFile_freeview, "ab") as f:
+            f.seek(0)
+            f.truncate()
+            # f.write(b"\n")
+            np.savetxt(f, self.elecPos_freeview, fmt='%10.8f', delimiter=' ', newline='\n', header=f"{self.elecPos_freeview.shape[0]}")
+        
+        
 
     ## target point functions
     def startPoint(self):
