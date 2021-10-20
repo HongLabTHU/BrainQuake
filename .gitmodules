@@ -1,3 +1,6 @@
 [submodule "BrainQuake/utils/hough-3d-lines"]
 	path = BrainQuake/utils/hough-3d-lines
 	url = https://github.com/cdalitz/hough-3d-lines.git
+[submodule "BrainQuake/utils/hough-3d-lines/hough-3d-lines"]
+	path = BrainQuake/utils/hough-3d-lines/hough-3d-lines
+	url = https://github.com/cdalitz/hough-3d-lines.git
