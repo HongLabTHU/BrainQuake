@@ -141,10 +141,11 @@ def trackRecognition(patient, cmd_hough3d, CTresult_dir, intraFile, thre=0.2):
     
     X = np.transpose(np.array((xs, ys, zs)))
     # print(X.shape)
-    fname = f"{CTresult_dir}/{patient}_3dPointClouds.dat"
+    # fname = f"{CTresult_dir}{patient}_3dPointClouds.dat"
+    fname = os.path.join(CTresult_dir, f"{patient}_3dPointClouds.dat")
     np.savetxt(fname, X, fmt='%.4f', delimiter=',', newline='\n', header='point clouds', footer='', comments='# ', encoding=None)
     
-    cmd_hough = f"{cmd_hough3d} -o {CTresult_dir}/{patient}.txt -minvotes 5 {fname}"
+    cmd_hough = f"{cmd_hough3d} -o {CTresult_dir}{patient}.txt -minvotes 5 {fname}"
     run(cmd=cmd_hough)
     return xs, ys, zs
 
@@ -168,7 +169,7 @@ class Preprocess_thread(QThread):
         super(Preprocess_thread, self).__init__()
 
     def run(self): # erode, skull, intra_save
-        mask_file = os.path.join(f"{self.directory_surf}/mri", f"mask.mgz")
+        mask_file = os.path.join(self.directory_surf, "mri", "mask.mgz")
         img_mask = nib.load(mask_file)
         data_mask = img_mask.get_fdata()
         data_mask_ero = ndimage.morphology.binary_erosion(data_mask, iterations=self.ero_itr)
@@ -214,7 +215,8 @@ class GenerateLabel_thread(QThread):
 
     def run(self):
         # process 3d line hough transform
-        hough_file = f"{self.directory_ct}/{self.patient}.txt"
+        # hough_file = f"{self.directory_ct}{self.patient}.txt"
+        hough_file = os.path.join(self.directory_ct, f"{self.patient}.txt")
         if not os.path.exists(hough_file):
             xs, ys, zs = trackRecognition(patient=self.patient, cmd_hough3d=CMD_Hough3D, CTresult_dir=self.directory_ct, intraFile=self.intra_file, thre=0)
         else: # temporarily
@@ -280,7 +282,8 @@ class ContactSegment_thread(QThread):
         self.finished.emit()
 
 def savenpy(filePath, patientName):
-    dir = f"{filePath}/{patientName}_result"
+    # dir = f"{filePath}/{patientName}_result"
+    dir = os.path.join(filePath, f"{patientName}_result")
     # dir1 = f"{filePath}/{patientName}_data"
     elec_dict = {}
     for root, dirs, files in os.walk(dir, topdown=True):
@@ -296,14 +299,17 @@ def savenpy(filePath, patientName):
             elec_info = elec_info # [1:, :] # [:,np.array([2,1,0])]
             elec_dict[elec_name] = elec_info
         
-    np.save(f"{filePath}/chnXyzDict.npy", elec_dict)
+    # np.save(f"{filePath}/chnXyzDict.npy", elec_dict)
+    np.save(os.path.join(filePath, f"chnXyzDict.npy"), elec_dict)
 
 def lookupTable(subdir, patient, ctdir, elec_label):
-    annot_dir = f"{subdir}/subjects/{patient}/mri/aparc.a2009s+aseg.mgz"
-    lookup_table = f"{subdir}/FreeSurferColorLUT.txt" 
+    # annot_dir = f"{subdir}/mri/aparc.a2009s+aseg.mgz"
+    annot_dir = os.path.join(subdir, 'mri', 'aparc.a2009s+aseg.mgz')
+    lookup_table = f"FreeSurferColorLUT.txt"
     annot_img = nib.load(annot_dir).get_fdata()
     
-    elecs_file = f"{ctdir}/{patient}_result/{elec_label}.txt"
+    # elecs_file = f"{ctdir}/{patient}_result/{elec_label}.txt"
+    elecs_file = os.path.join(ctdir, f"{patient}_result/{elec_label}.txt")
     elecs_xyz = np.loadtxt(elecs_file, dtype='float', comments='#')
     elecs_xyz = elecs_xyz[:, [0, 2, 1]]
     elecs_xyz[:, 0] = 128 - elecs_xyz[:, 0]
@@ -362,7 +368,8 @@ class ElectrodeSeg:
             for filename in files:
                 if re.search(r'CT_intra.nii.gz', filename):
                     raw_flag = 1
-                    self.rawDataPath = f"{self.filePath}/{filename}"
+                    # self.rawDataPath = f"{self.filePath}/{filename}"
+                    self.rawDataPath = os.path.join(self.filePath, filename)
                     break
         if not raw_flag:
             sys.exit()
@@ -372,7 +379,8 @@ class ElectrodeSeg:
             for filename in files:
                 if re.search(r'_labels.npy', filename):
                     label_flag = 1
-                    self.labelsPath = f"{self.filePath}/{filename}"
+                    # self.labelsPath = f"{self.filePath}/{filename}"
+                    self.labelsPath = os.path.join(self.filePath, filename)
                     break
         if not label_flag:
             sys.exit()
@@ -418,10 +426,12 @@ class ElectrodeSeg:
         # self.rawData_single[self.xs, self.ys, self.zs] = self.rawData_single[self.xs, self.ys, self.zs] * 3
         self.rawData_single[xmin:xmax+1, ymin:ymax+1, zmin:zmax+1] = self.rawData_single[xmin:xmax+1, ymin:ymax+1, zmin:zmax+1] * 3
 
-        self.resultPath = f"{self.filePath}/{self.patientName}_result"
+        # self.resultPath = f"{self.filePath}/{self.patientName}_result"
+        self.resultPath = os.path.join(self.filePath, f"{self.patientName}_result")
         if not os.path.exists(self.resultPath):
             os.mkdir(self.resultPath)
-        self.resultFile = f"{self.resultPath}/{self.nameLabel}.txt"
+        # self.resultFile = f"{self.resultPath}/{self.nameLabel}.txt"
+        self.resultFile = os.path.join(self.resultPath, f"{self.nameLabel}.txt")
         self.elecPos = [0, 0, 0]
         self.headStart = [0, 0, 0]
         self.targetPoint = [0, 0, 0]

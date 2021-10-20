@@ -261,6 +261,7 @@ class Electrodes(QtWidgets.QWidget, Electrodes_gui):
     def genLabelFinished(self, k_flag):
         if k_flag: 
             # 此处应警告，聚类K_check<K
+            print('Warning: Cannot cluster enough electrode tracks!')
             pass
         else:
             find_flag = 0 # check for label_file existance
@@ -344,7 +345,8 @@ class Electrodes(QtWidgets.QWidget, Electrodes_gui):
         savenpy(filePath=self.directory_ct, patientName=self.patient)
         
         ## set tableWidget
-        dir = f"{self.directory_ct}/{self.patient}_result"
+        # dir = f"{self.directory_ct}/{self.patient}_result"
+        dir = os.path.join(self.directory_ct, f"{self.patient}_result")
         self.elec_dict = {}
         self.elec_number_dict = {}
         self.elec_label_dict = {}
@@ -366,7 +368,7 @@ class Electrodes(QtWidgets.QWidget, Electrodes_gui):
             number = str(self.elec_number_dict[item])
             self.tableWidget.setItem(row, 1, QTableWidgetItem(number))
             # labels_name = utils.elec_utils.lookupTable(subdir=SUBDIR, patient=self.patient, ctdir=self.directory_ct, elec_label=item)
-            labels_name = lookupTable(subdir=SUBDIR, patient=self.patient, ctdir=self.directory_ct, elec_label=item)
+            labels_name = lookupTable(subdir=self.directory_surf, patient=self.patient, ctdir=self.directory_ct, elec_label=item)
             self.tableWidget.setItem(row, 2, QTableWidgetItem(labels_name[0]))
             self.elec_label_dict[item] = labels_name
         print(self.elec_label_dict)
@@ -396,29 +398,27 @@ class Electrodes(QtWidgets.QWidget, Electrodes_gui):
         self.vis3D(filePath=os.getcwd(), patName=self.patient)
 
     def vis3D(self, filePath, patName):
-        elecs_xyzDict=np.load(f"{filePath}/dataset/{patName}_data/fslresults/chnXyzDict.npy",allow_pickle=True)[()]
-        brain_data=nib.load(f"{self.directory_surf}/mri/orig.mgz")
+        # elecs_xyzDict=np.load(f"{filePath}/dataset/{patName}_data/fslresults/chnXyzDict.npy",allow_pickle=True)[()]
+        elecs_xyzDict=np.load(os.path.join(filePath, f"dataset/{patName}_data/fslresults/chnXyzDict.npy"), allow_pickle=True)[()]
+        # brain_data=nib.load(f"{self.directory_surf}/mri/orig.mgz")
+        brain_data=nib.load(os.path.join(self.directory_surf, 'mri', 'orig.mgz'))
         aff_matrix=brain_data.header.get_affine()
         print(aff_matrix)
-        verl,facel=nib.freesurfer.read_geometry(f"{self.directory_surf}/surf/lh.pial")
-        verr,facer=nib.freesurfer.read_geometry(f"{self.directory_surf}/surf/rh.pial")
+        # verl,facel=nib.freesurfer.read_geometry(f"{self.directory_surf}/surf/lh.pial")
+        # verr,facer=nib.freesurfer.read_geometry(f"{self.directory_surf}/surf/rh.pial")
+        verl,facel=nib.freesurfer.read_geometry(os.path.join(self.directory_surf, 'surf', 'lh.pial'))
+        verr,facer=nib.freesurfer.read_geometry(os.path.join(self.directory_surf, 'surf', 'rh.pial'))
         
         all_ver=np.concatenate([verl,verr],axis=0)
         tmp_facer=facer+verl.shape[0]
         all_face=np.concatenate([facel,tmp_facer],axis=0)
         vol_center_tmp=np.dot(aff_matrix,np.array([128,128,128,1])[:,None])
         vol_center = vol_center_tmp[:3]
-        # print('vol_center_tmp\n', vol_center_tmp)
-        # print(vol_center)
-        # vol_center=np.dot(aff_matrix,np.array([0,0,0,1])[:,None])[:3]
+        
         reCenter_xyzDict={}
         for ch,xyz in elecs_xyzDict.items():
-            # tmp_xyz=np.dot(aff_matrix,np.concatenate([xyz,np.ones((xyz.shape[0],1))],axis=1).T)[:3].T
-            # reCenter_xyzDict[ch]=(xyz - vol_center.T) # [:-2, :] # remove the 2 outermost contacts
             reCenter_xyzDict[ch]=xyz
-        # # for songzishuo
-        # reCenter_xyzDict["E'"]=reCenter_xyzDict["E'"][:-2, :]
-        # reCenter_xyzDict["F'"]=reCenter_xyzDict["F'"][:-1, :]
+        
         print('------')
         for k, v in reCenter_xyzDict.items():
             print(k, v.shape)
@@ -446,18 +446,12 @@ class Electrodes(QtWidgets.QWidget, Electrodes_gui):
         for child in mlab.get_engine().scenes[0].children:
             poly_data_normals = child.children[0]
             poly_data_normals.filter.feature_angle = 80.0
-        # colormap = ['Greens','Blues','black-white','Purples','blue-red','Greys','pink','summer','winter','jet']
-        # colormap = [(1,0,0), (0,1,0), (0,0,1), (1,1,0), (1,0,1), (0,1,1)][:n_clus]
-        # colormap.append((1/255, 1/255, 1/255)) # discarded
-        # i=1
+        
         for chnn,xyz in reCenter_xyzDict.items():
             for j in range(xyz.shape[0]):
                 mlab.points3d(xyz[j,0], xyz[j,1], xyz[j,2], color=(0,0,0), scale_factor=1.5)
-            #mlab.points3d(xyz[:,0], xyz[:,1], xyz[:,2], colormap=colormap[i], scale_factor=2)
             mlab.text3d(xyz[-1,0]+4,xyz[-1,1]+4,xyz[-1,2]+4,chnn,orient_to_camera=True,color=(0,0,1),line_width=10,scale=2)
-            # print(chnn)
-            # i = i+1
-        # mlab.title("$%s, n_{clus}=%s, n_{discard}=%s$" % (mpn(patientName), n_clus, n_bad), size=0.5)
+            
         mlab.draw()
 
 if __name__ == "__main__":
