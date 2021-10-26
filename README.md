@@ -41,7 +41,7 @@ The **BrainQuake** software:
 
 We recommend a one-stop installation option that you use anaconda to create a virtual environment for all those packages and dependencies. After installing [anaconda](https://www.anaconda.com/products/individual#Downloads), run the following:
 
-    conda create -n bq_env -c conda-forge python=3.7 numpy scipy matplotlib nb_conda vtk netcdf4 mayavi mne nibabel PyQt5 scikit-learn
+    conda create -n bq_env -c conda-forge python=3.7 numpy scipy matplotlib nb_conda vtk netcdf4 mayavi mne nibabel scikit-learn
     
 With this conda venv 'bq_env' created, BrainQuake main window can pop up by running:
 
