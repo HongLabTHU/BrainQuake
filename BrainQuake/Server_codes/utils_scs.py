@@ -14,7 +14,7 @@ SEPARATOR = '<SEPARATOR>'
 BUFFER_SIZE = 4096
 host = '0.0.0.0'
 port = 6669
-FILEPATH = '/home/hello/reconModule_test/testCS/data/recv'
+FILEPATH = os.path.join(os.getcwd(), 'data', 'recv') # '/home/hello/reconModule_test/testCS/data/recv'
 
 def text_send(socket, msg):
     msg = pickle.dumps(msg)

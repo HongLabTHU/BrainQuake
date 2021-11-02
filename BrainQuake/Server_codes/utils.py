@@ -6,15 +6,16 @@ import time
 import multiprocessing
 import eePipeline
 
-Filepath = '/home/hello/reconModule_test/testCS/data/recv/task_log.txt'
-Filepath2 = '/home/hello/reconModule_test/testCS/data/recv/task_done.txt'
 Filename1 = 'task_log.txt'
 Filename2 = 'task_done.txt'
-FILEPATH = '/home/hello/reconModule_test/testCS/data/recv/'
-FILEPATH2 = '/home/hello/reconModule_test/testCS/data/recon/'
-SUBJECTS_DIR = '/usr/local/freesurfer/subjects'
+FILEPATH = os.path.join(os.getcwd(), 'data', 'recv') # '/home/hello/reconModule_test/testCS/data/recv/'
+FILEPATH2 = os.path.join(os.getcwd(), 'data', 'recon') # '/home/hello/reconModule_test/testCS/data/recon/'
+SUBJECTS_DIR = os.getenv('SUBJECTS_DIR') # '/usr/local/freesurfer/subjects'
 FASTPATH = '/home/hello/Downloads/labServer/FastSurfer-master'
 CHECKTIME = 10
+
+Filepath = os.path.join(FILEPATH, Filename1) # '/home/hello/reconModule_test/testCS/data/recv/task_log.txt'
+Filepath2 = os.path.join(FILEPATH, Filename2) # '/home/hello/reconModule_test/testCS/data/recv/task_done.txt'
 
 def task_log(req, num=None, name=None, hospital=None, reconType=None, state=None, info=None):
     """A function to analysis a request either from a client, 
