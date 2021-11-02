@@ -13,8 +13,8 @@ SEPARATOR = '<SEPARATOR>'
 BUFFER_SIZE = 4096
 host = '0.0.0.0'
 port = 6669
-FILEPATH = '/usr/local/freesurfer/subjects'
-FILEPATH1 = '/home/hello/reconModule_test/testCS/data/recv/fslresults'
+FILEPATH = os.getenv('SUBJECTS_DIR') # '/usr/local/freesurfer/subjects'
+# FILEPATH1 = '/home/hello/reconModule_test/testCS/data/recv/fslresults'
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # s.bind((socket.gethostname(), 1241))
@@ -33,21 +33,21 @@ while True:
         task = utils_scs.text_recv(clientsocket)
         print(f'task: {task}')
 
-        if task == '10' or task == '11': # task 1: reconstruction
+        if task == '10' or task == '11' or task == '12': # task 1: reconstruction
             p1 = multiprocessing.Process(target=task_utils.recv_a_t1, args=(clientsocket, task,))
             p1.start()
             # p1.join()
             break
-        elif task == '12': # task 12: CT file upload
-            p2 = multiprocessing.Process(target=task_utils.recv_a_ct, args=(clientsocket,))
-            p2.start()
+        # elif task == '12': # task 12: CT file upload
+            # p2 = multiprocessing.Process(target=task_utils.recv_a_ct, args=(clientsocket,))
+            # p2.start()
             # p2.join()
-            break
-        elif task == '13': # task 13: download fslresults
-            p3 = multiprocessing.Process(target=task_utils.send_fsls, args=(clientsocket,))
-            p3.start()
+            # break
+        # elif task == '13': # task 13: download fslresults
+            # p3 = multiprocessing.Process(target=task_utils.send_fsls, args=(clientsocket,))
+            # p3.start()
             # p3.join()
-            break
+            # break
         elif task == '2': # task 2: check
             p4 = multiprocessing.Process(target=task_utils.check_recon, args=(clientsocket,))
             p4.start()

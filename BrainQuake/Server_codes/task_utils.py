@@ -16,8 +16,8 @@ SEPARATOR = '<SEPARATOR>'
 BUFFER_SIZE = 4096
 host = '0.0.0.0'
 port = 6669
-FILEPATH = '/usr/local/freesurfer/subjects'
-FILEPATH1 = '/home/hello/reconModule_test/testCS/data/recv'
+FILEPATH = os.getenv('SUBJECTS_DIR') # '/usr/local/freesurfer/subjects'
+FILEPATH1 = os.path.join(os.getcwd(), 'data', 'recv') # '/home/hello/reconModule_test/testCS/data/recv'
 
 def recv_a_t1(clientsocket, task):
     task_flag = 1 # a task starts here
@@ -28,6 +28,9 @@ def recv_a_t1(clientsocket, task):
         number = utils_scs.file_recv(clientsocket, reconType)
     elif task == '11':
         reconType = f"fast-surfer"
+        number = utils_scs.file_recv(clientsocket, reconType)
+    elif task == '12':
+        reconType = f"infant-surfer" 
         number = utils_scs.file_recv(clientsocket, reconType)
     print('T1 file received')
     # here we read the log
