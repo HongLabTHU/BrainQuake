@@ -118,9 +118,9 @@ class quakeMain(QWidget):
         self.elec_widget.show()
 
     def surfs_computation(self):
-        pass
-        # self.surf_widget=reconSurferUi()
-        # self.surf_widget.show()
+        # pass
+        self.surf_widget=reconSurferUi()
+        self.surf_widget.show()
 
 
 if __name__ == '__main__':
