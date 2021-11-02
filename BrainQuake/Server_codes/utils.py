@@ -373,7 +373,11 @@ def reconrun(cmd, num, name, hospital, reconType):
     print(cmd_label_convert_lh)
     os.system(cmd_label_convert_lh)
     
-    cmd_register = f"flirt -in {cdir}/{name}CT.nii.gz -ref {SUBJECTS_DIR}/{name}/mri/orig.nii.gz -out {cdir}/fslresults/{name}CT_Reg.nii.gz -cost normmi -dof 12"
+    cmd_fslfolder = f"mkdir {SUBJECTS_DIR}/{name}/fslresults"
+    print(cmd_fslfolder)
+    os.system(cmd_fslfolder)
+    
+    cmd_register = f"flirt -in {cdir}/{name}CT.nii.gz -ref {SUBJECTS_DIR}/{name}/mri/orig.nii.gz -out {SUBJECTS_DIR}/{name}/fslresults/{name}CT_Reg.nii.gz -cost normmi -dof 12"
     print(cmd_register)
     os.system(cmd_register)
     
