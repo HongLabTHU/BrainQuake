@@ -302,26 +302,26 @@ def divide_a_log(log):
 def write_a_fastcmd(log):
     num, name, hospital, reconType, state, info = divide_a_log(log)
     filename = str(name)
-    filepath = FILEPATH + str(name) + 'T1.nii.gz'
-    cmd = f"cd {FASTPATH} && nohup ./run_fastsurfer.sh --t1 {filepath} --sid {filename}fast --sd $SUBJECTS_DIR --parallel --threads 8 --py python3.7 --surfreg >{filename}fast.log 2>&1"
+    filepath = os.path.join(FILEPATH, filename, f"{filename}T1.nii.gz") # FILEPATH + str(name) + 'T1.nii.gz'
+    cmd = f"cd {FASTPATH} && ./run_fastsurfer.sh --t1 {filepath} --sid {filename}fast --sd $SUBJECTS_DIR --parallel --threads 8 --py python3.7 --surfreg >{filename}fast.log 2>&1"
     # cmd = f"python test.py"
     return cmd
     
 def write_a_freecmd(log):
     num, name, hospital, reconType, state, info = divide_a_log(log)
     filename = str(name)
-    filepath = FILEPATH + str(name) + 'T1.nii.gz'
-    cmd = f"nohup recon-all -i {filepath} -s {filename} -all -parallel -openmp 8 >{filename}.log 2>&1"
+    filepath = os.path.join(FILEPATH, filename, f"{filename}T1.nii.gz") # FILEPATH + str(name) + 'T1.nii.gz'
+    cmd = f"recon-all -i {filepath} -s {filename} -all -parallel -openmp 8 >{filename}.log 2>&1"
     # cmd = f"python test.py"
     return cmd
     
-# def write_a_infantcmd(log, age):
-#    num, name, hospital, state, info = divide_a_log(log)
-#    filename = str(name)
-#    filepath = FILEPATH + str(name) + 'T1.nii.gz'
-#    infant_age = str(age)
-#    cmd = f"infant_recon_all --s {filename} --age {infant_age}"
-#    return cmd
+def write_a_infantcmd(log):
+    num, name, hospital, reconType, state, info = divide_a_log(log)
+    filename = str(name)
+    filepath = os.path.join(FILEPATH, filename, f"{filename}T1.nii.gz") # FILEPATH + str(name) + 'T1.nii.gz'
+    # infant_age = str(age)
+    cmd = f"infant_recon_all --s {filename}"
+    return cmd
 
 def reconrun(cmd, num, name, hospital, reconType):
     """
@@ -333,18 +333,53 @@ def reconrun(cmd, num, name, hospital, reconType):
         Command to be sent to the shell.
     """
     assert reconType=='recon-all', 'Wrong reconType!'
+    
+    # unzip cmd
+    cdir = os.path.join(os.getcwd(), 'data', 'recv', name)
+    if os.path.isfile(os.path.join(cdir, f"{name}.zip")):
+        if not os.path.isfile(os.path.join(cdir, f"{name}CT.nii.gz")):
+            cmd_unzip = f"unzip {cdir}/{name}.zip -d {cdir}"
+            print(cmd_unzip)
+            os.system(cmd_unzip)
+    fdir = os.path.join(cdir, 'fslresults')
+    if not os.path.isdir(fdir):
+        os.system(f"mkdir {fdir}")
+    
+    # run recon-all
     print(f"Running shell command: {cmd}")
     task_log(req='freesurfer', num=num, reconType='recon-all', state='running', info=0)
     os.system(cmd)
-    cmd3 = f"mris_convert --combinesurfs /usr/local/freesurfer/subjects/{name}/surf/lh.pial /usr/local/freesurfer/subjects/{name}/surf/rh.pial /usr/local/freesurfer/subjects/{name}/{name}.stl"
-    print(cmd3)
-    os.system(cmd3)
-    cmd4 = f"mne watershed_bem -s {name} -o"
-    print(cmd4)
-    os.system(cmd4)
+    
+    # run supplementary cmds
+    # cmd3 = f"mris_convert --combinesurfs /usr/local/freesurfer/subjects/{name}/surf/lh.pial /usr/local/freesurfer/subjects/{name}/surf/rh.pial /usr/local/freesurfer/subjects/{name}/{name}.stl"
+    # print(cmd3)
+    # os.system(cmd3)
+    # cmd4 = f"mne watershed_bem -s {name} -o"
+    # print(cmd4)
+    # os.system(cmd4)
+    cmd_mri_convert = f"mri_convert {SUBJECTS_DIR}/{name}/mri/orig.mgz {SUBJECTS_DIR}/{name}/mri/orig.nii.gz"
+    print(cmd_mri_convert)
+    os.system(cmd_mri_convert)
+
+    cmd_mri_binarize = f"mri_binarize --i {SUBJECTS_DIR}/{name}/mri/brainmask.mgz --o {SUBJECTS_DIR}/{name}/mri/mask.mgz --min 1"
+    print(cmd_mri_binarize)
+    os.system(cmd_mri_binarize)
+    
+    cmd_label_convert_rh = f"mri_annotation2label --subject {name} --hemi rh --outdir {SUBJECTS_DIR}/{name}/label"
+    print(cmd_label_convert_rh)
+    os.system(cmd_label_convert_rh)
+
+    cmd_label_convert_lh = f"mri_annotation2label --subject {name} --hemi lh --outdir {SUBJECTS_DIR}/{name}/label"
+    print(cmd_label_convert_lh)
+    os.system(cmd_label_convert_lh)
+    
+    cmd_register = f"flirt -in {cdir}/{name}CT.nii.gz -ref {SUBJECTS_DIR}/{name}/mri/orig.nii.gz -out {cdir}/fslresults/{name}CT_Reg.nii.gz -cost normmi -dof 12"
+    print(cmd_register)
+    os.system(cmd_register)
+    
     task_log(req='freesurfer', num=num, reconType='recon-all', state='finished', info=1)
     write_to_done(req='freesurfer', num=num, name=name, hospital=hospital, reconType='recon-all', state='finished', info=1)
-    cmd1 = f"cd {SUBJECTS_DIR} && zip -r {name}.zip {name}"
+    cmd1 = f"cd {SUBJECTS_DIR} && zip -rq {name}.zip {name}"
     print(cmd1)
     os.system(cmd1)
     # cmd2 = f"scp {SUBJECTS_DIR}/{name}.zip {FILEPATH2}"
@@ -363,17 +398,27 @@ def fastrun(cmd, num, name, hospital, reconType):
     assert reconType=='fast-surfer', 'Wrong reconType!'
     print(f"Running shell command: {cmd}")
     task_log(req='freesurfer', num=num, reconType='fast-surfer', state='running', info=0)
-    os.system(cmd)
+    # os.system(cmd)
     
     task_log(req='freesurfer', num=num, reconType='fast-surfer', state='finished', info=1)
     write_to_done(req='freesurfer', num=num, name=name, hospital=hospital, reconType='fast-surfer', state='finished', info=1)
     cmd1 = f"cd {SUBJECTS_DIR} && zip -r {name}fast.zip {name}fast"
     print(cmd1)
-    os.system(cmd1)
+    # os.system(cmd1)
     return
     
-#def infantrun(cmd, num, name, hospital):
-#    return
+def infantrun(cmd, num, name, hospital, reconType):
+    print('infant function to be waiting...')
+
+    task_log(req='freesurfer', num=num, reconType='infant-surfer', state='running', info=0)
+    # os.system(cmd)
+
+    task_log(req='freesurfer', num=num, reconType='infant-surfer', state='finished', info=1)
+    write_to_done(req='freesurfer', num=num, name=name, hospital=hospital, reconType='infant-surfer', state='finished', info=1)
+    cmd1 = f"cd {SUBJECTS_DIR} && zip -r {name}fast.zip {name}fast"
+    print(cmd1)
+    # os.system(cmd1)
+    return
 
 #def estimate(num, name, hospital, state, info):
 #    while True:

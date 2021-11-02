@@ -7,7 +7,7 @@ import multiprocessing
 import utils as utils
 
 CHECKTIME = 10
-Filepath = './data/recv/task_done.txt'
+Filepath = os.path.join(os.getcwd(), 'data', 'recv', 'task_done.txt') # './data/recv/task_done.txt'
 
 while True: ## poll and recon
     # wait for a poll
@@ -34,7 +34,10 @@ while True: ## poll and recon
             p1 = multiprocessing.Process(target=utils.reconrun,args=(cmd,num,name,hospital,reconType,))
         elif reconType == 'fast-surfer':
             cmd = utils.write_a_fastcmd(log)
-            p1 = multiprocessing.Process(target=utils.fastrun,args=(cmd,num,name,hospital,reconType,))
+            p1 = multiprocessing.Process(target=utils.fastrun,args=(cmd,num,name,hospital,reconType,)) 
+        elif reconType == 'infant-surfer':
+            cmd = utils.write_a_infantcmd(log)
+            p1 = multiprocessing.Process(target=utils.infantrun,args=(cmd,num,name,hospital,reconType,))
         # p1 = multiprocessing.Process(target=utils.run,args=(cmd,num,name,hospital,))
         # p2 = multiprocessing.Process(target=utils.estimate,args=(num,name,hospital,state,info,))
         p1.start()
