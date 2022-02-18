@@ -40,11 +40,11 @@ The **BrainQuake** software:
     cd BrainQuake
     python client_main.py
 
-**Note!!!** Installation using pip may face a problem of dependency package version conflict! The newest 'mayavi' version has a conflict with the newest 'vtk' package, so in requirement.txt we define the downloading versions to be 'vtk==8.1.2' and 'mayavi==4.6.2'. If you have installed a later version of mayavi or vtk before, please notice the version changing issue.
+**Note!!!** Installation using pip may face a problem of dependency package version conflict! The newest 'mayavi' version has a conflict with the newest 'vtk' package, so in requirement.txt we define the downloading versions to be 'vtk==8.1.2' and 'mayavi==4.6.2'. If you have installed a later version of mayavi or vtk before, please notice the version changing issue. For now, matplotlib version should be fixed to 3.4.3.
 
 We **HIGHLY RECOMMEND** a one-stop installation option that you use anaconda to create a virtual environment for all those packages and dependencies. After installing [anaconda](https://www.anaconda.com/products/individual#Downloads), run the following: (python>=3.6 will all be fine.)
 
-    conda create -n bq_env -c conda-forge python=3.7 numpy scipy matplotlib nb_conda vtk netcdf4 mayavi mne nibabel scikit-learn
+    conda create -n bq_env -c conda-forge python=3.7 numpy scipy matplotlib=3.4.3 nb_conda vtk mayavi=4.6.2 mne nibabel scikit-learn
     
 With this conda virtual environment (venv) 'bq_env' created, BrainQuake main window can pop up by running:
 
