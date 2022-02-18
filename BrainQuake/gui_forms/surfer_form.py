@@ -145,7 +145,7 @@ class Ui_reconSurfer(object):
             background-color:dimgrey;}QPushButton:hover{background-color:k;}")
         self.pushButton_3.setText('Check')
         self.pushButton_3.setToolTip('check for recon processes')
-        self.gridlayout.addWidget(self.pushButton_3, 8, 7, 1, 1)
+        self.gridlayout.addWidget(self.pushButton_3, 7, 7, 1, 1)
         self.pushButton_4 = QtWidgets.QPushButton(self.groupBox_1)
         self.pushButton_4.setObjectName("Download")
         self.pushButton_4.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
