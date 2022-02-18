@@ -278,12 +278,12 @@ class reconSurferUi(QtWidgets.QWidget, Ui_reconSurfer):
     def mayaviplot(self, name):
         self.previewlist = name
         print(self.previewlist)
-        self.zipfilepath = os.path.join(Filepath, 'data', 'down', f"{self.previewlist}.zip")
-        self.unzipfilepath = os.path.join(Filepath, 'data', 'down', f"{self.previewlist}")
+        self.zipfilepath = os.path.join(Filepath, "download", f"{self.previewlist}.zip")
+        self.unzipfilepath = os.path.join(Filepath, "download", f"{self.previewlist}")
         if os.path.exists(self.zipfilepath):
             if not os.path.exists(self.unzipfilepath):
-                os.system(f"unzip {self.zipfilepath} -d ./data/down")
-            self.pialfilepath = os.path.join(Filepath, 'data', 'down', self.previewlist, 'surf')
+                os.system(f"unzip {self.zipfilepath} -d ./download")
+            self.pialfilepath = os.path.join(Filepath, "download", self.previewlist, 'surf')
             lh_pial_file=os.path.join(self.pialfilepath,'lh.pial')
             rh_pial_file=os.path.join(self.pialfilepath,'rh.pial')
             verl,facel=nib.freesurfer.read_geometry(lh_pial_file)
