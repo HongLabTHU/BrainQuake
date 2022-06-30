@@ -1,0 +1,17 @@
+If you want to use the electrode module for SEEG electrode registration, there are the following steps to go.
+
+Supplementary prerequisites:
+
+1. Install a c++ compiler
+    see here: https://gcc.gnu.org/install/ for Mac and linux users; or here for windows users: MinGW https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/ and https://zhuanlan.zhihu.com/p/363769672
+
+2. Download a libeigen 3.x library at whatever a suitable path for you
+    See here: https://eigen.tuxfamily.org/index.php?title=Main_Page
+
+3. At your_path_to/BrainQuake/BrainQuake/hough-3d-lines/:
+    $ git https://github.com/cdalitz/hough-3d-lines.git
+
+4. Open the Makefile in this submodule and set LIBEIGEN (line14) and CC (line 17) in your case. Then type 'make' in the terminal at this Makefile's path.
+
+
+    
