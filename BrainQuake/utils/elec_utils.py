@@ -404,8 +404,11 @@ class ElectrodeSeg:
             self.alphaList.pop(8)
         else:
             self.alphaList = [chr(i) for i in range(65, 65+self.numElecs)]
+        print(self.iLabel)
         self.iValue = self.labelValues[self.iLabel]
+        print(self.iValue)
         self.nameLabel = self.alphaList[self.iLabel-1]
+        print(self.nameLabel)
         data_elec = np.copy(self.labels)
         data_elec[np.where(self.labels != self.iValue)] = 0 ## isolate a single cluster of voxels belonging to the ith electrode
         self.xs, self.ys, self.zs = np.where(data_elec != 0) 
